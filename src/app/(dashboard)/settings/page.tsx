@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, User, Lock, Bell, LogOut } from 'lucide-react';
+import { Settings, User, Lock, Bell, LogOut, Loader } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import { logoutUser } from '@/lib/auth';
 
@@ -13,18 +13,36 @@ export default function SettingsPage() {
   const router = useRouter();
   const { logout } = useAuthStore();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [settings, setSettings] = useState({
-    firstName: 'Admin',
-    lastName: 'User',
-    email: 'admin@example.com',
-    phone: '+1-234-567-8900',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
     timezone: 'UTC-5',
     language: 'English',
   });
 
+  useEffect(() => {
+    // Load user settings from localStorage (from login response or user profile)
+    const userEmail = localStorage.getItem('user_email') || 'User';
+    const firstName = localStorage.getItem('user_firstName') || 'Admin';
+    const lastName = localStorage.getItem('user_lastName') || 'User';
+    const phone = localStorage.getItem('user_phone') || '+1-234-567-8900';
+    
+    setSettings(prev => ({
+      ...prev,
+      firstName,
+      lastName,
+      email: userEmail,
+      phone,
+    }));
+    setIsLoading(false);
+  }, []);
+
   const handleSave = async () => {
     setIsSaving(true);
-    // Simulate save
+    // Simulate save - in production, you would call an API
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsSaving(false);
     alert('Settings saved successfully!');
@@ -36,6 +54,17 @@ export default function SettingsPage() {
     router.push('/login');
     router.refresh();
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader className="w-8 h-8 text-blue-400 animate-spin" />
+          <p className="text-slate-400">Loading settings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8'>

@@ -49,9 +49,9 @@ export default function EmployeesPage() {
         const response = await employeeAPIWithFallback.getAll();
         setEmployees(response.data);
         setFilteredEmployees(response.data);
-      } catch (error) {
-        const err = error as any;
-        throw new Error(err?.message || 'Failed to fetch employees');
+      } catch (error: any) {
+        console.error('Failed to fetch employees:', error?.message);
+        // Don't throw error - let page continue with fallback or empty state
       } finally {
         setIsLoading(false);
       }
@@ -105,7 +105,8 @@ export default function EmployeesPage() {
   );
 
   const getStatusColor = (status?: string) => {
-    switch(status?.toLowerCase()) {
+    const statusStr = String(status || '').toLowerCase();
+    switch(statusStr) {
       case 'active':
         return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
       case 'inactive':
@@ -198,7 +199,7 @@ export default function EmployeesPage() {
               ) : filteredEmployees.length > 0 ? (
                 filteredEmployees.map((employee) => (
                   <TableRow key={employee.id} className='border-slate-700/20 hover:bg-slate-700/20 transition-colors'>
-                    <TableCell className='font-mono text-xs text-slate-400 py-3'>{employee.id.slice(0, 8)}</TableCell>
+                    <TableCell className='font-mono text-xs text-slate-400 py-3'>{String(employee.id).slice(0, 8)}</TableCell>
                     <TableCell className='font-semibold text-slate-100 py-3'>
                       {employee.firstName} {employee.lastName}
                     </TableCell>

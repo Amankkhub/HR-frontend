@@ -1,24 +1,12 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { EnhancedDashboardCards } from '@/components/dashboard/StatCard';
 import { EmployeeGrowthChart, DepartmentDistribution, AttendanceChart } from '@/components/charts/EmployeeStats';
 import { AttendanceTrendChart } from '@/components/charts/AttendanceStats';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Users, BarChart3, TrendingUp } from 'lucide-react';
 
 export default function DashboardPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push('/login');
-    }
-  }, [router]);
-
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8'>
       {/* Header */}

@@ -8,8 +8,15 @@ export interface LoginResponse {
 export const loginUser = async (email: string, password: string): Promise<LoginResponse> => {
   const response = await authAPI.login(email, password);
   const token = response.data.access_token;
+  const userData = response.data.user || response.data;
   
   localStorage.setItem('access_token', token);
+  
+  // Store user data if available
+  if (userData.id) localStorage.setItem('user_id', userData.id);
+  if (userData.firstName) localStorage.setItem('user_firstName', userData.firstName);
+  if (userData.lastName) localStorage.setItem('user_lastName', userData.lastName);
+  if (userData.email) localStorage.setItem('user_email', userData.email);
   
   return response.data;
 };

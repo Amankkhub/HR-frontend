@@ -33,8 +33,8 @@ const employeeSchema = z.object({
   nationality: z.string().min(1, 'Nationality is required'),
   role: z.string().min(1, 'Role is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  departmentId: z.string().min(1, 'Department is required'),
-  locationId: z.string().min(1, 'Location is required'),
+  departmentId: z.string().optional(),
+  locationId: z.string().optional(),
 });
 
 type EmployeeFormData = z.infer<typeof employeeSchema>;
@@ -57,6 +57,24 @@ export default function EmployeeForm({ onSuccess }: EmployeeFormProps) {
     formState: { errors },
   } = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeSchema),
+    defaultValues: {
+      firstName: '',
+      middleName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      dob: '',
+      currentAddress: '',
+      permanentAddress: '',
+      maritalStatus: '',
+      bloodGroup: '',
+      physicallyHandicapped: false,
+      nationality: '',
+      role: '',
+      password: '',
+      departmentId: '',
+      locationId: '',
+    },
   });
 
   useEffect(() => {
@@ -317,7 +335,7 @@ export default function EmployeeForm({ onSuccess }: EmployeeFormProps) {
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Department *
+                Department
               </label>
               <Controller
                 name='departmentId'
@@ -329,7 +347,7 @@ export default function EmployeeForm({ onSuccess }: EmployeeFormProps) {
                     </SelectTrigger>
                     <SelectContent>
                       {departments.map((dept) => (
-                        <SelectItem key={dept.id} value={dept.id}>
+                        <SelectItem key={dept.id} value={String(dept.id)}>
                           {dept.name}
                         </SelectItem>
                       ))}
@@ -344,7 +362,7 @@ export default function EmployeeForm({ onSuccess }: EmployeeFormProps) {
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Location *
+                Location
               </label>
               <Controller
                 name='locationId'
@@ -356,7 +374,7 @@ export default function EmployeeForm({ onSuccess }: EmployeeFormProps) {
                     </SelectTrigger>
                     <SelectContent>
                       {locations.map((loc) => (
-                        <SelectItem key={loc.id} value={loc.id}>
+                        <SelectItem key={loc.id} value={String(loc.id)}>
                           {loc.name}
                         </SelectItem>
                       ))}

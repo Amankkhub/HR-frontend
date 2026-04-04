@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { logoutUser } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,19 @@ import { LogOut, Settings, Bell, Search } from 'lucide-react';
 export default function Navbar() {
   const router = useRouter();
   const { logout } = useAuthStore();
+  const [userInitials, setUserInitials] = useState('US');
+  const [userName, setUserName] = useState('User');
+  const [userEmail, setUserEmail] = useState('user@example.com');
+
+  useEffect(() => {
+    const firstName = localStorage.getItem('user_firstName') || 'User';
+    const lastName = localStorage.getItem('user_lastName') || 'System';
+    const email = localStorage.getItem('user_email') || 'user@example.com';
+    
+    setUserInitials((firstName.charAt(0) + lastName.charAt(0)).toUpperCase());
+    setUserName(`${firstName} ${lastName}`);
+    setUserEmail(email);
+  }, []);
 
   const handleSettings = () => {
     router.push('/settings');
@@ -62,15 +76,15 @@ export default function Navbar() {
           {/* User Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger className='w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center cursor-pointer hover:opacity-90 transition-all border border-blue-400/30 hover:border-blue-400/60 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-white font-semibold text-sm' type='button'>
-              AD
+              {userInitials}
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align='end' 
               className='w-60 bg-slate-800/95 border border-slate-700/50 backdrop-blur-xl rounded-lg shadow-2xl'
             >
               <div className='px-4 py-3 border-b border-slate-700/30'>
-                <p className='text-sm font-semibold text-slate-100'>Admin User</p>
-                <p className='text-xs text-slate-400'>admin@example.com</p>
+                <p className='text-sm font-semibold text-slate-100'>{userName}</p>
+                <p className='text-xs text-slate-400'>{userEmail}</p>
               </div>
               
               <DropdownMenuItem 

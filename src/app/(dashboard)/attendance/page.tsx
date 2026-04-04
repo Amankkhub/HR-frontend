@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { attendanceAPIWithFallback } from '@/lib/apiWithFallback';
 import { Plus, Clock, TrendingUp, Calendar } from 'lucide-react';
 import AttendanceForm from '@/components/forms/AttendanceForm';
+import CheckInOut from '@/components/attendance/CheckInOut';
 import { DepartmentAttendanceChart, AttendanceTrendChart } from '@/components/charts/AttendanceStats';
 import { format } from 'date-fns';
 
@@ -37,9 +38,9 @@ export default function AttendancePage() {
     try {
       const response = await attendanceAPIWithFallback.getAll();
       setAttendance(response.data);
-    } catch (error) {
-      const err = error as any;
-      throw new Error(err?.message || 'Failed to fetch attendance');
+    } catch (error: any) {
+      console.error('Failed to fetch attendance:', error?.message);
+      // Don't throw error - let page continue with empty state or fallback data
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +98,36 @@ export default function AttendancePage() {
     };
   };
 
+  const calculateAvgHours = () => {
+    if (attendance.length === 0) return '0h 0m';
+    
+    let totalHours = 0;
+    let recordsWithHours = 0;
+    
+    attendance.forEach(record => {
+      if (record.checkIn && record.checkOut) {
+        try {
+          const [inHour, inMin] = record.checkIn.split(':').map(Number);
+          const [outHour, outMin] = record.checkOut.split(':').map(Number);
+          
+          const inMinutes = inHour * 60 + inMin;
+          const outMinutes = outHour * 60 + outMin;
+          const hours = (outMinutes - inMinutes) / 60;
+          
+          totalHours += Math.max(0, hours);
+          recordsWithHours++;
+        } catch (e) {
+          // Skip invalid time formats
+        }
+      }
+    });
+    
+    const avgHours = recordsWithHours > 0 ? Math.floor(totalHours / recordsWithHours) : 0;
+    const avgMinutes = recordsWithHours > 0 ? Math.round((totalHours / recordsWithHours - avgHours) * 60) : 0;
+    
+    return `${avgHours}h ${avgMinutes}m`;
+  };
+
   const stats = getTodayStats();
 
   return (
@@ -145,7 +176,7 @@ export default function AttendancePage() {
 
         <div className='bg-gradient-to-br from-amber-900/30 to-amber-800/30 p-6 rounded-xl border border-amber-700/50 backdrop-blur-xl'>
           <p className='text-slate-400 text-sm mb-2'>Avg. Hours</p>
-          <p className='text-3xl font-bold text-amber-400'>8h 42m</p>
+          <p className='text-3xl font-bold text-amber-400'>{calculateAvgHours()}</p>
           <p className='text-xs text-slate-500 mt-2'>Per employee</p>
         </div>
       </div>
@@ -154,6 +185,11 @@ export default function AttendancePage() {
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8'>
         <AttendanceTrendChart />
         <DepartmentAttendanceChart />
+      </div>
+
+      {/* Quick Check In/Out */}
+      <div className='mb-8'>
+        <CheckInOut onCheckInSuccess={handleSuccess} onCheckOutSuccess={handleSuccess} />
       </div>
 
       {/* Tabs Section */}
@@ -199,7 +235,7 @@ export default function AttendancePage() {
                       return (
                         <TableRow key={record.id} className='border-slate-700/20 hover:bg-slate-700/20 transition-colors'>
                           <TableCell className='font-mono text-xs text-slate-400 py-3'>
-                            {record.id.slice(0, 8)}
+                            {String(record.id).slice(0, 8)}
                           </TableCell>
                           <TableCell className='font-semibold text-slate-100 py-3'>
                             {record.employeeId}

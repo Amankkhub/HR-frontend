@@ -43,6 +43,12 @@ export default function AttendanceForm({ onSuccess }: AttendanceFormProps) {
     formState: { errors },
   } = useForm<AttendanceFormData>({
     resolver: zodResolver(attendanceSchema),
+    defaultValues: {
+      employeeId: '',
+      date: '',
+      checkIn: '',
+      checkOut: '',
+    },
   });
 
   useEffect(() => {
@@ -108,13 +114,13 @@ export default function AttendanceForm({ onSuccess }: AttendanceFormProps) {
               name='employeeId'
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value || ''} onValueChange={field.onChange}>
                   <SelectTrigger>
                     <SelectValue placeholder='Select employee' />
                   </SelectTrigger>
                   <SelectContent>
                     {employees.map((emp) => (
-                      <SelectItem key={emp.id} value={emp.id}>
+                      <SelectItem key={emp.id} value={String(emp.id)}>
                         {emp.firstName} {emp.lastName}
                       </SelectItem>
                     ))}

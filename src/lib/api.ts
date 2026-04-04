@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
+// Backend URL from environment - use as-is
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 const api: AxiosInstance = axios.create({
@@ -10,7 +11,7 @@ const api: AxiosInstance = axios.create({
   timeout: 10000,
 });
 
-// Request interceptor to attach JWT token
+// Request interceptor to attach JWT token + log request
 api.interceptors.request.use((config) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
   if (token) {
@@ -19,10 +20,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor to handle errors
+// Response interceptor to handle errors + log response
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   (error: AxiosError) => {
+    const url = error.config?.url;
+    const status = error.response?.status;
+    console.error(`❌ API Error: ${status} ${url}`, error.response?.data);
+    
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('access_token');

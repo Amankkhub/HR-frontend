@@ -42,10 +42,10 @@ export default function LoginPage() {
       const response = await loginUser(data.email, data.password);
       setToken(response.access_token);
 
-      // Set cookie for middleware
-      document.cookie = `access_token=${response.access_token}; path=/`;
-
-      router.push('/dashboard');
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 100);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
