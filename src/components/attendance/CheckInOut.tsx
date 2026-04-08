@@ -36,7 +36,11 @@ export default function CheckInOut({ onCheckInSuccess, onCheckOutSuccess }: Chec
 
       if (todayRec) {
         setTodayRecord(todayRec);
-        setIsCheckedIn(!!todayRec.checkIn);
+        // Only checked in if checkIn exists AND checkOut does NOT exist
+        setIsCheckedIn(!!todayRec.checkIn && !todayRec.checkOut);
+      } else {
+        setTodayRecord(null);
+        setIsCheckedIn(false);
       }
     } catch (err) {
       console.error('Failed to load today record:', err);
@@ -61,16 +65,10 @@ export default function CheckInOut({ onCheckInSuccess, onCheckOutSuccess }: Chec
         return;
       }
 
-      const today = new Date().toISOString().split('T')[0];
       const currentTime = getCurrentTime();
 
-      const data = {
-        employeeId: userId,
-        date: today,
-        checkIn: currentTime,
-      };
-
-      await attendanceAPI.create(data);
+      // Call the correct backend endpoint
+      await attendanceAPI.checkIn(userId);
       setSuccess('✅ Checked in successfully at ' + currentTime);
       setIsCheckedIn(true);
       
@@ -99,9 +97,8 @@ export default function CheckInOut({ onCheckInSuccess, onCheckOutSuccess }: Chec
 
       const currentTime = getCurrentTime();
 
-      await attendanceAPI.update(todayRecord.id, {
-        checkOut: currentTime,
-      });
+      // Call the correct backend endpoint
+      await attendanceAPI.checkOut(String(todayRecord.id));
 
       setSuccess('✅ Checked out successfully at ' + currentTime);
       setIsCheckedIn(false);

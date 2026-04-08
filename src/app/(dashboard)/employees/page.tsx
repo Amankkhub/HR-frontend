@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { employeeAPIWithFallback } from '@/lib/apiWithFallback';
+import { getUserRole } from '@/lib/roleGuard';
 import { Plus, Search, Users, TrendingUp, Filter } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -41,6 +42,13 @@ export default function EmployeesPage() {
     const token = localStorage.getItem('access_token');
     if (!token) {
       router.push('/login');
+      return;
+    }
+
+    // Check role - only ADMIN and HR can view
+    const userRole = getUserRole();
+    if (userRole !== 'ADMIN' && userRole !== 'HR') {
+      router.push('/dashboard');
       return;
     }
 

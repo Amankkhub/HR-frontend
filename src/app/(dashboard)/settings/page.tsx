@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, User, Lock, Bell, LogOut, Loader } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import { logoutUser } from '@/lib/auth';
+import { getUserRole } from '@/lib/roleGuard';
 
 export default function SettingsPage() {
   const router = useRouter();

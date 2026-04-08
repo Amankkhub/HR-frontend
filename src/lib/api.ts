@@ -28,7 +28,21 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     const url = error.config?.url;
     const status = error.response?.status;
-    console.error(`❌ API Error: ${status} ${url}`, error.response?.data);
+    const errorMessage = error.message || 'Unknown error';
+    const responseData = error.response?.data;
+    
+    // Better error logging
+    if (!error.response) {
+      // Network error, no response from server
+      console.error(`❌ Network Error (${errorMessage}): ${url}`, {
+        message: errorMessage,
+        code: error.code,
+        config: error.config,
+      });
+    } else {
+      // Server responded with error status
+      console.error(`❌ API Error: ${status} ${url}`, responseData);
+    }
     
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
@@ -45,6 +59,8 @@ export const authAPI = {
   login: (email: string, password: string) =>
     api.post('/auth/login', { email, password }),
   register: (data: any) =>
+    api.post('/auth/register', data),
+  createEmployee: (data: any) =>
     api.post('/auth/register', data),
 };
 
@@ -74,6 +90,9 @@ export const attendanceAPI = {
   create: (data: any) => api.post('/attendance', data),
   update: (id: string, data: any) => api.patch(`/attendance/${id}`, data),
   delete: (id: string) => api.delete(`/attendance/${id}`),
+  checkIn: (employeeId: string) => api.post(`/attendance/checkin/${employeeId}`),
+  checkOut: (attendanceId: string) => api.post(`/attendance/checkout/${attendanceId}`),
+  getEmployeeAttendance: (employeeId: string) => api.get(`/attendance/employee/${employeeId}`),
 };
 
 export default api;

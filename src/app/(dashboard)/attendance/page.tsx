@@ -37,7 +37,17 @@ export default function AttendancePage() {
   const fetchAttendance = async () => {
     try {
       const response = await attendanceAPIWithFallback.getAll();
-      setAttendance(response.data);
+      const allRecords = response.data || [];
+      
+      // Filter to show only current user's attendance (unless ADMIN/HR)
+      const userRole = localStorage.getItem('user_role');
+      const userId = localStorage.getItem('user_id');
+      
+      const filtered = userRole === 'ADMIN' || userRole === 'HR' 
+        ? allRecords 
+        : allRecords.filter((a: Attendance) => String(a.employeeId) === userId);
+      
+      setAttendance(filtered);
     } catch (error: any) {
       console.error('Failed to fetch attendance:', error?.message);
       // Don't throw error - let page continue with empty state or fallback data
@@ -90,11 +100,22 @@ export default function AttendancePage() {
 
   const getTodayStats = () => {
     const today = new Date().toISOString().split('T')[0];
-    const todayRecords = attendance.filter(a => a.date.startsWith(today));
+    const userRole = localStorage.getItem('user_role');
+    const userId = localStorage.getItem('user_id');
+    
+    // Filter to show only current user's stats (unless ADMIN/HR)
+    let todayRecords = attendance.filter((a: Attendance) => {
+      const matchDate = a.date && (typeof a.date === 'string' ? a.date.startsWith(today) : false);
+      if (userRole === 'ADMIN' || userRole === 'HR') {
+        return matchDate;
+      }
+      return matchDate && String(a.employeeId) === userId;
+    });
+    
     return {
       total: todayRecords.length,
-      checkedIn: todayRecords.filter(a => a.checkIn).length,
-      checkedOut: todayRecords.filter(a => a.checkOut).length,
+      checkedIn: todayRecords.filter((a: Attendance) => a.checkIn).length,
+      checkedOut: todayRecords.filter((a: Attendance) => a.checkOut).length,
     };
   };
 
@@ -181,15 +202,15 @@ export default function AttendancePage() {
         </div>
       </div>
 
-      {/* Charts */}
+      {/* Quick Check In/Out - Full Width */}
+      <div className='mb-8'>
+        <CheckInOut onCheckInSuccess={handleSuccess} onCheckOutSuccess={handleSuccess} />
+      </div>
+
+      {/* Charts - Full Width Below */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8'>
         <AttendanceTrendChart />
         <DepartmentAttendanceChart />
-      </div>
-
-      {/* Quick Check In/Out */}
-      <div className='mb-8'>
-        <CheckInOut onCheckInSuccess={handleSuccess} onCheckOutSuccess={handleSuccess} />
       </div>
 
       {/* Tabs Section */}

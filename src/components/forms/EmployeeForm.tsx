@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AlertCircle, Loader } from 'lucide-react';
-import { employeeAPI } from '@/lib/api';
+import { authAPI, employeeAPI } from '@/lib/api';
 import { departmentAPIWithFallback, locationAPIWithFallback } from '@/lib/apiWithFallback';
 
 const employeeSchema = z.object({
@@ -101,7 +101,24 @@ export default function EmployeeForm({ onSuccess }: EmployeeFormProps) {
       setError(null);
       setIsLoading(true);
 
-      await employeeAPI.create(data);
+      // Use authAPI.createEmployee which calls /auth/register endpoint
+      await authAPI.createEmployee({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+        phone: data.phone,
+        dob: data.dob,
+        currentAddress: data.currentAddress,
+        permanentAddress: data.permanentAddress,
+        maritalStatus: data.maritalStatus,
+        bloodGroup: data.bloodGroup,
+        physicallyHandicapped: data.physicallyHandicapped,
+        nationality: data.nationality,
+        departmentId: data.departmentId ? parseInt(data.departmentId) : undefined,
+        locationId: data.locationId ? parseInt(data.locationId) : undefined,
+      });
 
       if (onSuccess) {
         onSuccess();
